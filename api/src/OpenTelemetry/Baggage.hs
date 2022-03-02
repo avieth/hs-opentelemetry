@@ -81,7 +81,11 @@ tokenValue :: Token -> ByteString
 tokenValue (Token t) = t
 
 instance Lift Token where
+#if MIN_VERSION_template_haskell(2, 18, 0)
+  liftTyped (Token tok) = unsafeCodeCoerce $ bsToExp tok
+#else
   liftTyped (Token tok) = unsafeTExpCoerce $ bsToExp tok
+#endif
 
 -- | An entry into the baggage 
 data Element = Element
@@ -112,8 +116,12 @@ newtype Baggage = Baggage (H.HashMap Token Element)
 tokenCharacters :: CharSet
 tokenCharacters = C.fromList "!#$%&'*+-.^_`|~0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+#if MIN_VERSION_template_haskell(2, 18, 0)
+bsToExp :: Quote m => ByteString -> m Exp
+#else
 -- Ripped from file-embed-0.0.13
 bsToExp :: ByteString -> Q Exp
+#endif
 #if MIN_VERSION_template_haskell(2, 5, 0)
 bsToExp bs =
     return $ ConE 'Token
