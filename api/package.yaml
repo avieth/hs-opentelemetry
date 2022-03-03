@@ -22,7 +22,7 @@ default-extensions:
 - RecordWildCards
 
 dependencies:
-- base >= 4.7 && < 5
+- base >= 4.16 && < 5
 - async
 - bytestring
 - text

@@ -118,11 +118,11 @@ toHexadecimal (SBS bin) = runST $ ST $ \s ->
 
 -- | Convert a value Word# to two Word#s containing
 -- the hexadecimal representation of the Word#
-convertByte :: Word# -> (# Word#, Word# #)
+convertByte :: Word8# -> (# Word8#, Word8# #)
 convertByte b = (# r tableHi b, r tableLo b #)
   where
-        r :: Addr# -> Word# -> Word#
-        r table ix = indexWord8OffAddr# table (word2Int# ix)
+        r :: Addr# -> Word8# -> Word8#
+        r table ix = indexWord8OffAddr# table (word2Int# (word8ToWord# ix))
 
         !tableLo =
             "0123456789abcdef0123456789abcdef\
@@ -164,14 +164,14 @@ fromHexadecimal src@(SBS sbs)
       | otherwise = do
         let a = rHi (indexWord8Array# sbs i)
         let b = rLo (indexWord8Array# sbs (i +# 1#))
-        if isTrue# (eqWord# a (int2Word# 0xff#)) || isTrue# (eqWord# b (int2Word# 0xff#))
+        if isTrue# (eqWord# (word8ToWord# a) (int2Word# 0xff#)) || isTrue# (eqWord# (word8ToWord# b) (int2Word# 0xff#))
             then (# s, Just (I# i) #)
             else
-              case writeWord8Array# dst di (or# a b) s of
+              case writeWord8Array# dst di (orWord8# a b) s of
                 s1 -> loop dst (di +# 1#) (i +# 2#) s1
 
-    rLo ix = indexWord8OffAddr# tableLo (word2Int# ix)
-    rHi ix = indexWord8OffAddr# tableHi (word2Int# ix)
+    rLo ix = indexWord8OffAddr# tableLo (word2Int# (word8ToWord# ix))
+    rHi ix = indexWord8OffAddr# tableHi (word2Int# (word8ToWord# ix))
 
     !tableLo =
             "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\
